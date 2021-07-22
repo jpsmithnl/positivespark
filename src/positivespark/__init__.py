@@ -1,22 +1,68 @@
+from pprint import pprint
+import os
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+
 __version__ = '0.1.0'
 
-import tweepy
-import os
-from datetime import datetime
 
-consumer_key = os.environ.get("API_CONSUMER_KEY")
-consumer_secret = os.environ.get("API_CONSUMER_SECRET")
-access_token = os.environ.get("API_ACCESS_TOKEN")
-access_token_secret = os.environ.get("API_ACCESS_TOKEN_SECRET")
+def get_user_id(client, real_name):
+    members = client.users_list()['members']
+    for memb in members:
+        if memb['real_name'] == real_name:
+            return memb['id']
+            
+            
+def get_bot_member_channel_ids(client):
+    member_channels = []
+    for channel in client.conversations_list()['channels']:
+        if channel['is_member']:
+            member_channels.append(channel['id'])
+    return member_channels
+                
 
-# Authenticate to Twitter
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
+def get_most_recent_message_timestamp(client, channel_id, user_name, text):
+    history = client.conversations_history(channel=channel_id)
+    messages = history['messages']
+    for msg in messages:
+        is_bot = msg['user'] == get_user_id(client, user_name)
+        is_auto_msg = text in msg['text']
+        if is_bot and is_auto_msg:
+            return msg['ts']
+            
+            
+bot_token = os.environ['SLACK_BOT_TOKEN']
+bot_name = os.environ['SLACK_BOT_NAME']
+bot_text = os.environ['SLACK_BOT_TEXT']
+    
+client = WebClient(token=bot_token)
 
-# Create API object
-api = tweepy.API(auth)
+member_channel_ids = get_bot_member_channel_ids(client)
 
-# Create a tweet
-now = datetime.now()
-dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-api.update_status(f"Posted with Tweepy at {dt_string}")
+for channel_id in member_channel_ids:
+
+    recent_message_timestamp = get_most_recent_message_timestamp(
+        client, 
+        channel_id, 
+        bot_name, 
+        bot_text
+    )
+
+    if recent_message_timestamp:
+        print(f"Deleting recent message in {channel_id} at {recent_message_timestamp}")
+        client.chat_delete(
+            channel = channel_id,
+            ts = recent_message_timestamp
+        )
+
+    
+    response = client.chat_postMessage(
+        channel=channel_id, 
+        text=bot_text
+    )
+
+    print("posted new message")
+    print(response)
+        
+
+	

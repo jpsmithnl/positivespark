@@ -19,9 +19,31 @@ pyenv local 3.8.2
 
 This is a [poetry](https://python-poetry.org/docs/) project. See [here](https://python-poetry.org/docs/#installation) about how to install poetry itself. To install dependencies run `poetry install`
 
-This project uses the Twitter API, to get an API key create a new project. Store the keys it posts somewhere safe:
+
+This project uses the Slack API. 
+
+You will need an app:
+https://api.slack.com/apps
+
+You will also need a bot key with the following permissions:
+```
+chat:write
+conversations.connect:read
+users:read
+```
+
+Set up the bot's environment variables according to the config from the app:
+```
+SLACK_BOT_TOKEN
+SLACK_BOT_NAME
+SLACK_BOT_TEXT
+```
+
+
+This project used to use the Twitter API, to get an API key create a new project. Store the keys it posts somewhere safe:
 https://developer.twitter.com/en/portal/projects/new
 
 Under `Twitter Developer Portal` > `Settings` > `App permissions` make sure to allow write permissions.
 
 Tokens need to be refreshed afters changing permissions, under `Keys and tokens`>`Authentication Tokens` hit `Regenerate` if they were not created with the correct permissions.
+

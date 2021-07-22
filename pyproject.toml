@@ -7,6 +7,7 @@ authors = ["jpsmithnl <jp.smith@mun.ca>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 tweepy = "^3.10.0"
+slack-sdk = "^3.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
